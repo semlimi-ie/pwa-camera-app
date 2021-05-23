@@ -1,16 +1,12 @@
 <template>
   <div id="app">
-    <camera-page />
+    Welcome!
+    <nuxt-link to="/camera-page">Go to camera page</nuxt-link>
   </div>
 </template>
 
 <script>
-import CameraPage from '../components/CameraPage.vue'
-export default {
-  components: {
-    CameraPage,
-  },
-}
+export default {}
 </script>
 
 <style>
