@@ -18,7 +18,7 @@
         />
       </div>
     </div>
-    <div class="caption-text">
+    <div v-if="locationSupported" class="caption-text">
       <input
         type="text"
         class="caption-text-input"
@@ -28,14 +28,25 @@
     </div>
 
     <div class="location-text">
+      <link
+        rel="stylesheet"
+        href="https://use.fontawesome.com/releases/v5.2.0/css/all.css"
+        integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ"
+        crossorigin="anonymous"
+      />
       <input
         type="text"
         class="caption-text-input"
-        placeholder="Location"
+        :placeholder="locationLoading === false ? 'Location' : 'Loading...'"
+        @click="getLocation"
         v-model="post.location"
       />
     </div>
-    <button>Post Image</button>
+    <span v-if="locationLoading" class="button-load">
+      <!-- <font-awesome-icon icon="fa-solid fa-spinner" /> -->
+      <i class="fa fa-spinner fa-spin"></i>
+    </span>
+    <button @click="addPost">Post Image</button>
   </div>
 </template>
 
@@ -44,6 +55,7 @@ import { v4 as uuidv4 } from 'uuid'
 // require('md-gum-polyfill')
 
 export default {
+  emits: ['add-post'],
   name: 'camera-page',
   data() {
     return {
@@ -57,7 +69,22 @@ export default {
       imageCaptured: false,
       imageUpload: '',
       hasCameraSupport: true,
+      locationLoading: false,
     }
+  },
+  computed: {
+    locationSupported() {
+      if (
+        typeof window !== 'undefined' &&
+        typeof window.navigator !== 'undefined'
+      ) {
+        if ('geolocation' in navigator) {
+          return true
+        }
+        return false
+      }
+      return false
+    },
   },
   methods: {
     initCamera() {
@@ -142,22 +169,55 @@ export default {
       console.log('this.imageUpload', this.imageUpload)
       // this.createImage(files[0]);
     },
-    // createImage(file) {
-    //   // const photo = new Image();
-    //   console.log('create image called')
-    //   const reader = new FileReader()
-    //   // const vm = this
-
-    //   reader.onLoad = (e) => {
-    //     this.imageUpload = e.target.result
-    //     console.log('e.target.result', e.target.result)
-    //     console.log('this.imageUpload', this.imageUpload)
-    //   }
-    //   reader.readAsDataURL(file)
-    // },
+    getLocation() {
+      this.locationLoading = true
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          this.getCityAndCountry(position)
+        },
+        (err) => {
+          console.error(err)
+          this.locationError()
+        },
+        { timeout: 7000 }
+      )
+    },
+    async getCityAndCountry(position) {
+      const apiUrl = `https://geocode.xyz/${position.coords.latitude},${position.coords.longitude}?json=1`
+      try {
+        const { data: cityCountry } = await this.$axios.get(apiUrl)
+        // console.log('cityCountry', cityCountry);
+        await this.locationSuccess(cityCountry)
+      } catch (err) {
+        console.error(err)
+        this.locationError()
+      } finally {
+        this.locationLoading = false
+      }
+    },
+    locationSuccess(result) {
+      this.post.location = result.city
+      if (result.country) {
+        this.post.location += `, ${result.country}`
+      }
+    },
+    locationError() {
+      alert('Could not find your location.')
+    },
+    addPost() {
+      let formData = new FormData()
+      formData.append('id', this.post.id)
+      formData.append('caption', this.post.caption)
+      formData.append('location', this.post.location)
+      formData.append('date', this.post.date)
+      formData.append('file', this.post.photo, this.post.id + '.png')
+      console.log('formData', formData)
+      this.$emit('add-post', formData)
+    },
   },
   mounted() {
     this.initCamera()
+    console.log('navigator', navigator)
   },
   beforeDestroy() {
     if (this.hasCameraSupport) {
@@ -222,6 +282,11 @@ export default {
 }
 .snap:active {
   background-color: darken(#ffce00, 50%);
+}
+.button-load {
+  color: #171717;
+  padding: 12px 16px;
+  font-size: 32px;
 }
 </style>
 

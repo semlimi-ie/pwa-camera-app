@@ -1,6 +1,8 @@
 <template>
   <div id="app">
-    <camera-page />
+    <client-only>
+      <camera-page @add-post="createPost"></camera-page>
+    </client-only>
   </div>
 </template>
 
@@ -9,6 +11,13 @@ import CameraPage from '../components/CameraPage.vue'
 export default {
   components: {
     CameraPage,
+  },
+  methods: {
+    createPost(postData) {
+      console.log('createPost is called in camera-page')
+      this.$store.dispatch('addPost', postData)
+      // this.$router.replace('/home-page');
+    },
   },
 }
 </script>

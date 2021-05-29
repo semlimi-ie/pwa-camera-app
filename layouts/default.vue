@@ -1,6 +1,7 @@
 <template>
   <div>
     <Nuxt />
+    <loading-spinner />
   </div>
 </template>
 

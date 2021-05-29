@@ -17,6 +17,7 @@
     "core-js": "^3.9.1",
     "md-gum-polyfill": "^1.0.0",
     "nuxt": "^2.15.3",
+    "papaparse": "^5.3.0",
     "uuid": "^8.3.2"
   },
   "devDependencies": {

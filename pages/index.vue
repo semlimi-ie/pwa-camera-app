@@ -1,7 +1,13 @@
 <template>
   <div id="app">
     Welcome!
-    <nuxt-link to="/camera-page">Go to camera page</nuxt-link>
+    <div>
+      <nuxt-link to="/camera-page">Go to camera page</nuxt-link>
+    </div>
+
+    <div>
+      <nuxt-link to="/home-page"> Photo posts</nuxt-link>
+    </div>
   </div>
 </template>
 
